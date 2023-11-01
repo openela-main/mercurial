@@ -1,0 +1,28 @@
+# HG changeset patch
+# User Ondrej Pohorelsky <opohorel@redhat.com>
+# Date 1657729660 -7200
+#      Wed Jul 13 18:27:40 2022 +0200
+# Node ID 5f95d1ae2fcefd1d6b81cbba9355198fc6bc073f
+# Parent  259df3e3152c1fbb4d95c2fab682ca93581cf9ca
+# EXP-Topic ssl-another-fix-python36-compat
+sslutil: another use proper attribute to select python 3.7+
+
+The previous attribute was python 3.6+, but guarded a python 3.7+ block
+
+Using the correct attribute avoids:
++    File "/tmp/hgtests.bc0_uk2d/install/lib/python/mercurial/sslutil.py", line 577, in wrapserversocket
++      sslcontext.minimum_version = ssl.TLSVersion.TLSv1_1
++  AttributeError: module 'ssl' has no attribute 'TLSVersion'
+
+diff -r 259df3e3152c -r 5f95d1ae2fce mercurial/sslutil.py
+--- a/mercurial/sslutil.py	Mon Jul 11 09:54:40 2022 +0200
++++ b/mercurial/sslutil.py	Wed Jul 13 18:27:40 2022 +0200
+@@ -546,7 +546,7 @@
+                 _(b'referenced certificate file (%s) does not exist') % f
+             )
+ 
+-    if util.safehasattr(ssl, 'PROTOCOL_TLS_SERVER'):
++    if util.safehasattr(ssl, 'TLSVersion'):
+         # python 3.7+
+         sslcontext = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+         sslcontext.options |= getattr(ssl, 'OP_NO_COMPRESSION', 0)
